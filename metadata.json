@@ -1,0 +1,7 @@
+{
+  "name": "Linh Khí Bính Ngọ 2026 - Vận Mệnh Số",
+  "description": "Cổng thông tin huyền học kết hợp AI giải mã vận mệnh năm mới Bính Ngọ 2026.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
