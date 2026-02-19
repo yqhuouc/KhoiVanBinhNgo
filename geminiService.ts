@@ -144,22 +144,27 @@ export const getFengShuiInsight = async (year: string, houseDirection: string, m
 
 export const getFortuneInsight = async () => {
   const ai = getAI();
-  const prompt = `Bạn là một vị ẩn sĩ thông tuệ ẩn cư trên núi cao, chuyên gieo quẻ thánh linh ứng đầu năm 2026 (Bính Ngọ). 
-  Hãy gieo một quẻ ngẫu nhiên hoàn toàn (ý trời quyết định quẻ này là Đại Cát, Trung Cát, hay thậm chí là Hạ Hung). 
-  Người dùng không nói gì cả, họ chỉ thành tâm gieo quẻ. 
   
-  Yêu cầu quẻ bao gồm:
-  1. Tiêu đề quẻ trang trọng (Ví dụ: Quẻ số 24 - Địa Lôi Phục).
-  2. Một bài thơ quẻ cổ điển (Thất ngôn hoặc Lục bát, giàu hình ảnh).
+  // Danh sách các cấp độ quẻ
+  const ranks = ['Đại Cát', 'Trung Cát', 'Tiểu Cát', 'Bình Hòa', 'Hung', 'Đại Hung'];
+  
+  // Sử dụng Math.random để chọn rank trước khi gọi AI, đảm bảo tính khách quan
+  // Ta có thể điều chỉnh tỷ lệ ở đây nếu muốn (ví dụ làm quẻ Đại Cát/Đại Hung hiếm hơn)
+  const selectedRank = ranks[Math.floor(Math.random() * ranks.length)];
+
+  const prompt = `Bạn là một vị ẩn sĩ thông tuệ chuyên gieo quẻ thánh linh ứng. 
+  "Ý trời" đã định quẻ lần này là quẻ: **${selectedRank}**.
+  
+  Yêu cầu bạn hãy viết nội dung cho một quẻ tương ứng với cấp độ **${selectedRank}** này:
+  1. Tiêu đề quẻ trang trọng (Ví dụ: Quẻ số 15 - Địa Sơn Khiêm).
+  2. Một bài thơ quẻ giàu tính biểu tượng, phù hợp với tính chất ${selectedRank}.
   3. Dịch thơ sang tiếng Việt hiện đại.
-  4. Luận giải đầy đủ 4 phương diện:
-     - Tổng quát (Vận thế chung).
-     - Sự nghiệp & Tài lộc (Làm ăn, tiền bạc).
-     - Tình duyên & Gia đạo (Hạnh phúc, con cái).
-     - Sức khỏe & Bình an.
-  5. Lời khuyên tu tâm dưỡng tính để hóa giải hoặc đón lộc.
-  
-  Hãy phản hồi bằng JSON.`;
+  4. Luận giải chi tiết 4 phương diện: Tổng quát, Sự nghiệp, Tình duyên, Sức khỏe.
+  5. Lời khuyên thiết thực: 
+     - Nếu là quẻ Cát: Cách giữ vững vận may.
+     - Nếu là quẻ Hung: Cách tu tâm, làm việc thiện để hóa giải rủi ro.
+
+  Yêu cầu trả về định dạng JSON chính xác theo schema. Rank phải là "${selectedRank}".`;
   
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
@@ -170,6 +175,7 @@ export const getFortuneInsight = async () => {
         type: Type.OBJECT,
         properties: {
           title: { type: Type.STRING },
+          rank: { type: Type.STRING, enum: ['Đại Cát', 'Trung Cát', 'Tiểu Cát', 'Bình Hòa', 'Hung', 'Đại Hung'] },
           poem: { type: Type.STRING },
           translation: { type: Type.STRING },
           interpretation: {
@@ -183,7 +189,7 @@ export const getFortuneInsight = async () => {
           },
           advice: { type: Type.STRING }
         },
-        required: ["title", "poem", "translation", "interpretation", "advice"]
+        required: ["title", "rank", "poem", "translation", "interpretation", "advice"]
       }
     }
   });

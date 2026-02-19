@@ -48,6 +48,7 @@ export interface FengShuiResult {
 
 export interface FortuneResult {
   title: string;
+  rank: 'Đại Cát' | 'Trung Cát' | 'Tiểu Cát' | 'Bình Hòa' | 'Hung' | 'Đại Hung';
   poem: string;
   translation: string;
   interpretation: {

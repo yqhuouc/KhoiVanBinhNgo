@@ -10,11 +10,13 @@ import Fortune from './sections/Fortune';
 import Prayer from './sections/Prayer';
 import Stats from './sections/Stats';
 import { UserStats } from './types';
+import { useAudio } from './context/AudioContext';
 
 export type ViewType = 'home' | 'astrology' | 'numerology' | 'fengshui' | 'fortune' | 'prayer';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewType>('home');
+  const { isReady, initAudio } = useAudio();
   const [stats] = useState<UserStats>({
     totalViews: 9245,
     numerologyCounts: {
@@ -41,41 +43,11 @@ const App: React.FC = () => {
 
   const renderView = () => {
     switch (currentView) {
-      case 'astrology':
-        return (
-          <div className="animate-in fade-in zoom-in-95 duration-500">
-            <Astrology />
-            <BackButton />
-          </div>
-        );
-      case 'numerology':
-        return (
-          <div className="animate-in fade-in zoom-in-95 duration-500">
-            <Numerology />
-            <BackButton />
-          </div>
-        );
-      case 'fengshui':
-        return (
-          <div className="animate-in fade-in zoom-in-95 duration-500">
-            <FengShui />
-            <BackButton />
-          </div>
-        );
-      case 'fortune':
-        return (
-          <div className="animate-in fade-in zoom-in-95 duration-500">
-            <Fortune />
-            <BackButton />
-          </div>
-        );
-      case 'prayer':
-        return (
-          <div className="animate-in fade-in zoom-in-95 duration-500">
-            <Prayer />
-            <BackButton />
-          </div>
-        );
+      case 'astrology': return <><Astrology /><BackButton /></>;
+      case 'numerology': return <><Numerology /><BackButton /></>;
+      case 'fengshui': return <><FengShui /><BackButton /></>;
+      case 'fortune': return <><Fortune /><BackButton /></>;
+      case 'prayer': return <><Prayer /><BackButton /></>;
       default:
         return (
           <div className="animate-in fade-in duration-1000">
@@ -87,6 +59,30 @@ const App: React.FC = () => {
         );
     }
   };
+
+  if (!isReady) {
+    return (
+      <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center p-6 text-center">
+        <StarBackground />
+        <div className="relative z-10 space-y-8 animate-in zoom-in-95 duration-1000">
+          <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-red-600 to-amber-500 rounded-2xl flex items-center justify-center shadow-[0_0_50px_rgba(153,27,27,0.5)]">
+            <span className="text-white font-viet text-3xl font-bold">2026</span>
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-4xl font-viet font-bold text-amber-400 tracking-tighter">LINH KHÍ BÍNH NGỌ</h1>
+            <p className="text-red-200/50 text-[10px] font-bold uppercase tracking-[0.5em]">Giao thoa huyền học & Công nghệ</p>
+          </div>
+          <button 
+            onClick={initAudio}
+            className="px-12 py-5 bg-red-700 hover:bg-red-600 text-amber-200 font-black rounded-full border border-amber-500/30 transition-all hover:scale-105 active:scale-95 shadow-2xl tracking-[0.3em] text-sm uppercase"
+          >
+            Bắt Đầu Trải Nghiệm
+          </button>
+          <p className="text-amber-500/30 text-[9px] uppercase font-medium">Khám phá vận mệnh của bạn trong năm mới</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Layout currentView={currentView} onNavigate={setCurrentView}>

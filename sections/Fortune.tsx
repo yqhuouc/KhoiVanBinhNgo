@@ -1,13 +1,26 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getFortuneInsight } from '../geminiService';
 import { FortuneResult } from '../types';
+import { useAudio } from '../context/AudioContext';
 
 const Fortune: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [shaking, setShaking] = useState(false);
   const [stickOut, setStickOut] = useState(false);
   const [result, setResult] = useState<FortuneResult | null>(null);
+  const { playSFX } = useAudio();
+
+  useEffect(() => {
+    let shakeInterval: any;
+    if (shaking) {
+      // Giãn cách âm thanh shake ra 250ms để nghe tự nhiên và ổn định hơn
+      shakeInterval = setInterval(() => {
+        playSFX('shake');
+      }, 250);
+    }
+    return () => clearInterval(shakeInterval);
+  }, [shaking, playSFX]);
 
   const handleShake = async () => {
     if (shaking || loading) return;
@@ -16,7 +29,6 @@ const Fortune: React.FC = () => {
     setStickOut(false);
     setResult(null);
 
-    // Shake for 2.5 seconds for dramatic effect
     setTimeout(async () => {
       setShaking(false);
       setStickOut(true);
@@ -24,6 +36,7 @@ const Fortune: React.FC = () => {
       try {
         const data = await getFortuneInsight();
         setResult(data);
+        playSFX('bell');
       } catch (error) {
         console.error(error);
         alert('Linh khí đang bị nhiễu loạn, xin hãy tịnh tâm gieo lại sau ít phút.');
@@ -32,6 +45,23 @@ const Fortune: React.FC = () => {
         setLoading(false);
       }
     }, 2500);
+  };
+
+  const getRankColor = (rank: string) => {
+    switch (rank) {
+      case 'Đại Cát': return 'text-amber-400 border-amber-500 bg-amber-500/10 shadow-[0_0_20px_rgba(251,191,36,0.3)]';
+      case 'Trung Cát': return 'text-amber-300 border-amber-400 bg-amber-400/5';
+      case 'Tiểu Cát': return 'text-emerald-400 border-emerald-500 bg-emerald-500/5';
+      case 'Hung': return 'text-red-500 border-red-600 bg-red-600/5';
+      case 'Đại Hung': return 'text-purple-600 border-purple-700 bg-purple-700/10 shadow-[0_0_20px_rgba(147,51,234,0.3)]';
+      default: return 'text-gray-400 border-gray-500 bg-gray-500/5';
+    }
+  };
+
+  const getRankVibe = (rank: string) => {
+    if (rank.includes('Hung')) return 'border-red-900/50 from-red-950 to-black';
+    if (rank.includes('Cát')) return 'border-amber-500/30 from-red-950 to-black';
+    return 'border-gray-500/20 from-zinc-900 to-black';
   };
 
   return (
@@ -46,7 +76,6 @@ const Fortune: React.FC = () => {
       {!result && !loading && (
         <div className="flex flex-col items-center justify-center space-y-16 py-10">
           <div className="relative flex flex-col items-center cursor-pointer group" onClick={handleShake}>
-            {/* Fortune Tube Visual - Enhanced aesthetics */}
             <div className={`relative w-40 h-60 bg-gradient-to-b from-red-800 to-red-950 rounded-t-3xl border-x-4 border-t-4 border-amber-600 shadow-[0_0_50px_rgba(153,27,27,0.4)] ${shaking ? 'shake-anim' : 'group-hover:scale-105 transition-transform duration-500'}`}>
               <div className="absolute -top-14 left-1/2 -translate-x-1/2 flex gap-1.5 px-4 overflow-hidden">
                 {[...Array(8)].map((_, i) => (
@@ -58,14 +87,11 @@ const Fortune: React.FC = () => {
                     <span className="font-viet text-amber-500/30 text-5xl font-bold">福</span>
                  </div>
               </div>
-              
-              {/* Decorative label */}
               <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-amber-500 px-3 py-1 rounded text-[8px] font-black text-red-950 tracking-widest uppercase">
                 Linh Quẻ
               </div>
             </div>
 
-            {/* Fallen Stick - Now invisible until shake finishes */}
             {stickOut && !shaking && (
               <div className="absolute top-24 left-1/2 -translate-x-1/2 stick-anim">
                 <div className="w-5 h-48 bg-amber-400 border-2 border-amber-700 rounded-b-2xl shadow-2xl flex flex-col items-center pt-12">
@@ -75,7 +101,6 @@ const Fortune: React.FC = () => {
               </div>
             )}
             
-            {/* Hint text */}
             <div className="mt-12 text-center">
                <p className={`text-[10px] font-bold text-amber-500/60 uppercase tracking-[0.5em] animate-pulse transition-opacity ${shaking ? 'opacity-0' : 'opacity-100'}`}>
                  Chạm để gieo quẻ
@@ -100,20 +125,18 @@ const Fortune: React.FC = () => {
 
       {result && (
         <div className="space-y-12 animate-in fade-in zoom-in-95 duration-1000 pb-20">
-          <div className="glass-tet p-12 rounded-[3.5rem] border-amber-500/30 bg-gradient-to-br from-red-950 to-black text-center relative overflow-hidden">
-             {/* Background decorative elements */}
+          <div className={`glass-tet p-12 rounded-[3.5rem] border bg-gradient-to-br text-center relative overflow-hidden transition-all duration-1000 ${getRankVibe(result.rank)}`}>
              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent"></div>
-             <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-500/5 blur-3xl rounded-full"></div>
              
              <div className="mb-10">
-                <span className="text-[10px] font-bold text-amber-500/40 uppercase tracking-[0.5em] mb-4 block">KẾT QUẢ QUẺ THÁNH</span>
-                <h3 className="text-amber-500 font-viet text-4xl uppercase tracking-tighter glow-gold">{result.title}</h3>
+                <div className={`inline-block px-6 py-2 rounded-full border text-xs font-black uppercase tracking-[0.4em] mb-6 ${getRankColor(result.rank)}`}>
+                  {result.rank}
+                </div>
+                <h3 className="text-white font-viet text-4xl uppercase tracking-tighter glow-gold">{result.title}</h3>
              </div>
              
              <div className="relative mb-12">
-                <div className="absolute -inset-4 bg-amber-500/5 rounded-[2.5rem] blur-xl"></div>
-                <div className="relative bg-red-950/40 p-12 rounded-[2.5rem] border border-amber-500/10 inline-block w-full max-w-2xl">
-                  {/* Decorative corner marks */}
+                <div className="relative bg-red-950/40 p-12 rounded-[2.5rem] border border-white/5 inline-block w-full max-w-2xl">
                   <div className="absolute top-4 left-4 w-4 h-4 border-l border-t border-amber-500/30"></div>
                   <div className="absolute bottom-4 right-4 w-4 h-4 border-r border-b border-amber-500/30"></div>
                   
@@ -145,7 +168,7 @@ const Fortune: React.FC = () => {
              </div>
 
              <div className="mt-12 p-10 glass-tet rounded-[2.5rem] border-amber-500/20 bg-amber-500/5">
-                <h4 className="text-amber-400 font-bold uppercase text-[10px] mb-5 tracking-[0.3em]">Lời Khuyên Từ Ẩn Sĩ</h4>
+                <h4 className="text-amber-400 font-bold uppercase text-[10px] mb-5 tracking-[0.3em]">Lời Khuyên Để Hóa Giải/Đón Lộc</h4>
                 <p className="text-xl text-white font-viet italic leading-relaxed">
                   "{result.advice}"
                 </p>
@@ -153,7 +176,7 @@ const Fortune: React.FC = () => {
 
              <div className="mt-16 flex flex-col items-center gap-4">
                 <button 
-                  onClick={() => {setResult(null); setStickOut(false);}}
+                  onClick={() => {setResult(null); setStickOut(false); playSFX('click');}}
                   className="px-8 py-3 bg-red-900/40 hover:bg-red-900/60 border border-amber-500/20 rounded-full text-amber-500 font-bold text-[10px] uppercase tracking-widest transition-all"
                 >
                   Tạ Lễ & Gieo Quẻ Mới

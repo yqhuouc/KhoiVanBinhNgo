@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { getPrayerResponse } from '../geminiService';
 import { PrayerResult } from '../types';
+import { useAudio } from '../context/AudioContext';
 
 const Prayer: React.FC = () => {
   const [wish, setWish] = useState('');
@@ -9,16 +10,19 @@ const Prayer: React.FC = () => {
   const [isSent, setIsSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PrayerResult | null>(null);
+  const { playSFX } = useAudio();
 
   const handlePray = async () => {
     if (!wish.trim()) return alert("Hãy ghi lại điều tâm nguyện của bạn.");
     setLoading(true);
     setIsBurning(true);
+    playSFX('fire');
     
     try {
       const data = await getPrayerResponse(wish);
       setResult(data);
       setIsSent(true);
+      playSFX('bell');
     } catch (error) {
       console.error(error);
       alert("Huyền không bị nhiễu, hãy thử lại.");
@@ -157,7 +161,7 @@ const Prayer: React.FC = () => {
                 </div>
 
                 <button 
-                  onClick={() => { setIsSent(false); setIsBurning(false); setWish(''); setResult(null); }}
+                  onClick={() => { setIsSent(false); setIsBurning(false); setWish(''); setResult(null); playSFX('click'); }}
                   className="mt-14 text-amber-500/30 hover:text-amber-500 font-bold text-[10px] uppercase tracking-[0.5em] transition-all hover:tracking-[0.6em]"
                 >
                   Tiếp Tục Tu Tập & Nguyện Cầu
