@@ -13,7 +13,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate }) =>
   const { isMuted, toggleMute, playSFX } = useAudio();
 
   const handleNav = (view: ViewType) => {
-    playSFX('click');
+    playSFX('whoosh');
     onNavigate(view);
   };
 

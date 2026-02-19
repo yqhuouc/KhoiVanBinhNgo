@@ -2,19 +2,23 @@
 import React, { useState } from 'react';
 import { getAstrologyInsight } from '../geminiService';
 import { AstrologyResult } from '../types';
+import { useAudio } from '../context/AudioContext';
 
 const Astrology: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AstrologyResult | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'monthly' | 'stars'>('overview');
   const [form, setForm] = useState({ dob: '', time: '12:00', gender: 'Nam', birthPlace: 'Hà Nội' });
+  const { playSFX } = useAudio();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    playSFX('click');
     setLoading(true);
     try {
       const data = await getAstrologyInsight(form.dob, form.time, form.gender, form.birthPlace);
       setResult(data);
+      playSFX('success');
     } catch (error) {
       console.error(error);
       alert('Kết nối thần thức bị gián đoạn. Xin vui lòng thử lại sau.');

@@ -2,20 +2,24 @@
 import React, { useState } from 'react';
 import { getFengShuiInsight } from '../geminiService';
 import { FengShuiResult } from '../types';
+import { useAudio } from '../context/AudioContext';
 
 const FengShui: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<FengShuiResult | null>(null);
   const [form, setForm] = useState({ year: '1990', houseDirection: 'Hướng Đông', concern: 'Tài lộc' });
+  const { playSFX } = useAudio();
 
   const years = Array.from({ length: 80 }, (_, i) => (2026 - i).toString());
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    playSFX('click');
     setLoading(true);
     try {
       const data = await getFengShuiInsight(form.year, form.houseDirection, form.concern);
       setResult(data);
+      playSFX('success');
     } catch (error) {
       console.error(error);
     } finally {

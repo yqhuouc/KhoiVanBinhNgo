@@ -2,18 +2,22 @@
 import React, { useState } from 'react';
 import { getNumerologyInsight } from '../geminiService';
 import { NumerologyResult } from '../types';
+import { useAudio } from '../context/AudioContext';
 
 const Numerology: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<NumerologyResult | null>(null);
   const [form, setForm] = useState({ fullName: '', commonName: '', dob: '' });
+  const { playSFX } = useAudio();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    playSFX('click');
     setLoading(true);
     try {
       const data = await getNumerologyInsight(form.fullName, form.commonName, form.dob);
       setResult(data);
+      playSFX('success');
     } catch (error) {
       console.error(error);
     } finally {

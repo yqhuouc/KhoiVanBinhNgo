@@ -1,12 +1,19 @@
 
 import React from 'react';
 import { ViewType } from '../App';
+import { useAudio } from '../context/AudioContext';
 
 interface HeroProps {
   onNavigate: (view: ViewType) => void;
 }
 
 const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
+  const { playSFX } = useAudio();
+
+  const handleNavigate = (view: ViewType) => {
+    playSFX('click');
+    onNavigate(view);
+  };
   return (
     <section className="min-h-[85vh] flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
       {/* Hiệu ứng đèn lồng mờ ảo */}
@@ -30,7 +37,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
 
         <div className="pt-6 animate-in fade-in slide-in-from-bottom-14 duration-1000 flex flex-col sm:flex-row gap-4 items-center justify-center">
            <button 
-             onClick={() => onNavigate('prayer')}
+             onClick={() => handleNavigate('prayer')}
              className="group relative px-10 py-5 bg-red-700 hover:bg-red-600 border border-amber-500/30 text-amber-200 font-black rounded-full transition-all shadow-xl hover:scale-105 active:scale-95"
            >
               <span className="relative z-10 flex items-center gap-3 tracking-widest uppercase text-sm">
@@ -39,7 +46,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
            </button>
            
            <button 
-             onClick={() => onNavigate('fortune')}
+             onClick={() => handleNavigate('fortune')}
              className="group relative px-10 py-5 bg-amber-500 hover:bg-amber-400 text-red-950 font-black rounded-full transition-all shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:scale-105 active:scale-95"
            >
               <span className="relative z-10 flex items-center gap-3 tracking-widest uppercase text-sm">
@@ -57,7 +64,8 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           ].map((item, idx) => (
             <button 
               key={item.id}
-              onClick={() => onNavigate(item.id as ViewType)}
+              onClick={() => handleNavigate(item.id as ViewType)}
+              onMouseEnter={() => playSFX('hover')}
               className="group relative h-56 glass-tet rounded-3xl overflow-hidden hover:scale-105 transition-all duration-500 hover:border-amber-500/50"
             >
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-red-950/80 z-0"></div>

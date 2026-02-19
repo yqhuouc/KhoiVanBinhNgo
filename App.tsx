@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import StarBackground from './components/StarBackground';
 import Layout from './components/Layout';
 import Hero from './sections/Hero';
@@ -16,7 +16,8 @@ export type ViewType = 'home' | 'astrology' | 'numerology' | 'fengshui' | 'fortu
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewType>('home');
-  const { isReady, initAudio } = useAudio();
+  const { isReady, initAudio, playSFX } = useAudio();
+  const isFirstRender = useRef(true);
   const [stats] = useState<UserStats>({
     totalViews: 9245,
     numerologyCounts: {
@@ -25,13 +26,22 @@ const App: React.FC = () => {
   });
 
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+    } else {
+      playSFX('whoosh');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [currentView]);
+  }, [currentView, playSFX]);
+
+  const handleNavigate = useCallback((view: ViewType) => {
+    setCurrentView(view);
+  }, []);
 
   const BackButton = () => (
     <div className="mt-8 mb-24 text-center">
       <button 
-        onClick={() => setCurrentView('home')}
+        onClick={() => handleNavigate('home')}
         className="group relative px-10 py-4 glass-tet rounded-full text-[10px] font-bold tracking-[0.3em] text-amber-400 hover:text-white transition-all overflow-hidden"
       >
         <span className="relative z-10 flex items-center justify-center gap-3 uppercase">
@@ -51,7 +61,7 @@ const App: React.FC = () => {
       default:
         return (
           <div className="animate-in fade-in duration-1000">
-            <Hero onNavigate={setCurrentView} />
+            <Hero onNavigate={handleNavigate} />
             <div className="max-w-7xl mx-auto px-4 md:px-8 pb-24">
               <Stats stats={stats} />
             </div>
@@ -85,7 +95,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <Layout currentView={currentView} onNavigate={setCurrentView}>
+    <Layout currentView={currentView} onNavigate={handleNavigate}>
       <StarBackground />
       <div className="relative z-10">
         {renderView()}
